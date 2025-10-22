@@ -44,7 +44,8 @@ class TpsCalculator {
             return 20.0
         }
 
-        val elapsed = (timestamps.last() - timestamps.first()).coerceAtLeast(1)
-        return (timestamps.size - 1) * 1000.0 / elapsed * 20.0
+        val elapsedMillis = (timestamps.last() - timestamps.first()).coerceAtLeast(1)
+        val elapsedSeconds = elapsedMillis / 1000.0
+        return ((timestamps.size - 1) / elapsedSeconds).coerceAtLeast(20.0)
     }
 }

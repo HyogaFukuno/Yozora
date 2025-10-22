@@ -9,6 +9,7 @@ class YozoraCommands {
         fun register() {
             val lamp = MinestomLamp.builder().build()
             lamp.register(CommandStop())
+            lamp.register(CommandTps())
         }
     }
 }

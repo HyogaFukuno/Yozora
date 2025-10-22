@@ -19,6 +19,7 @@ class CommandStop {
 class CommandTps {
     @CommandPlaceholder
     fun onCommand(actor: MinestomCommandActor) {
-        actor.reply { Component.text("TPS: ${TpsCalculator.instance().getTps()}") }
+        val tps = TpsCalculator.instance().getTps()
+        actor.reply { Component.text("TPS: ${"%.2f".format(tps)}") }
     }
 }
