@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import net.minestom.server.Auth
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.entity.GameMode
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.instance.block.Block
 import net.orca.extension.addListener
@@ -73,6 +74,7 @@ class Yozora {
                     }
                 }
             }
+            instance.setBlock(0, 30, 0, Block.CHEST)
 
             // コマンドの登録
             YozoraCommands.register()
@@ -84,6 +86,7 @@ class Yozora {
                 val player = e.player
                 e.spawningInstance = instance
                 player.respawnPoint = Pos(0.0, 42.0, 0.0)
+                player.gameMode = GameMode.CREATIVE
 
                 player.launch {
                     player.async {
@@ -103,8 +106,13 @@ class Yozora {
 
     fun stop() {
         if (running.compareAndSet(expectedValue = true, newValue = false)) {
-            MinecraftServer.stopCleanly()
-            exitProcess(0)
+            try {
+                MinecraftServer.stopCleanly()
+                Thread.sleep(500L)
+                exitProcess(0)
+            }catch (ex: Exception) {
+                logger.error(ex) { "Failed to shutdown process." }
+            }
         }
     }
 
