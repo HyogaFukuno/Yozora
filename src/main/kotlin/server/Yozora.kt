@@ -15,6 +15,7 @@ import net.orca.extension.asComponent
 import net.orca.extension.async
 import net.orca.extension.launch
 import net.orca.server.commands.YozoraCommands
+import net.orca.server.hub.Hub
 import net.orca.server.util.TpsCalculator
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -76,6 +77,8 @@ class Yozora {
             }
             instance.setBlock(0, 30, 0, Block.CHEST)
 
+            Hub.register()
+
             // コマンドの登録
             YozoraCommands.register()
 
@@ -87,15 +90,6 @@ class Yozora {
                 e.spawningInstance = instance
                 player.respawnPoint = Pos(0.0, 42.0, 0.0)
                 player.gameMode = GameMode.CREATIVE
-
-                player.launch {
-                    player.async {
-                        player.sendMessage { "Hello World!".asComponent }
-                        delay(1000L)
-                        player.sendMessage { player.name }
-                    }.await()
-                    player.sendMessage { "await".asComponent }
-                }
             }
 
             System.gc()

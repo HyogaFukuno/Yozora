@@ -1,4 +1,4 @@
-package net.orca.server.commands
+package net.orca.server.command
 
 import net.kyori.adventure.text.Component
 import net.orca.server.Yozora
