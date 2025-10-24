@@ -3,6 +3,7 @@ package net.orca.server.command
 import net.kyori.adventure.text.Component
 import net.minestom.server.entity.GameMode
 import net.orca.server.hub.Hub
+import net.orca.server.survivalgames.SurvivalGames
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.CommandPlaceholder
 import revxrsal.commands.minestom.actor.MinestomCommandActor
@@ -56,7 +57,17 @@ class CommandHub {
     @CommandPlaceholder
     fun onCommand(actor: MinestomCommandActor) {
         if (actor.isPlayer) {
-            actor.asPlayer()?.instance = Hub.instance()
+            actor.asPlayer()?.instance = Hub.instance().getInstance()
+        }
+    }
+}
+
+@Command("sg")
+class CommandSg {
+    @CommandPlaceholder
+    fun onCommand(actor: MinestomCommandActor) {
+        if (actor.isPlayer) {
+            actor.asPlayer()?.instance = SurvivalGames.instance().getInstance()
         }
     }
 }

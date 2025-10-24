@@ -3,7 +3,6 @@ package net.orca.server
 import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator
 import de.articdive.jnoise.pipeline.JNoise
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.delay
 import net.minestom.server.Auth
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
@@ -11,11 +10,9 @@ import net.minestom.server.entity.GameMode
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.minestom.server.instance.block.Block
 import net.orca.extension.addListener
-import net.orca.extension.asComponent
-import net.orca.extension.async
-import net.orca.extension.launch
-import net.orca.server.commands.YozoraCommands
+import net.orca.server.command.YozoraCommands
 import net.orca.server.hub.Hub
+import net.orca.server.survivalgames.SurvivalGames
 import net.orca.server.util.TpsCalculator
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
@@ -24,10 +21,10 @@ import kotlin.system.exitProcess
 @OptIn(ExperimentalAtomicApi::class)
 class Yozora {
     companion object {
-        private var instance: Yozora? = null
+        private var INSTANCE: Yozora? = null
 
         fun instance(): Yozora {
-            return instance!!
+            return INSTANCE!!
         }
     }
 
@@ -37,7 +34,7 @@ class Yozora {
 
     init {
         MinecraftServer.setBrandName("Yozora")
-        instance = this
+        INSTANCE = this
     }
 
     fun server(): MinecraftServer {
@@ -77,7 +74,8 @@ class Yozora {
             }
             instance.setBlock(0, 30, 0, Block.CHEST)
 
-            Hub.register()
+            Hub().register()
+            SurvivalGames().register()
 
             // コマンドの登録
             YozoraCommands.register()

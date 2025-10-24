@@ -1,12 +1,5 @@
-package net.orca.server.commands
+package net.orca.server.command
 
-import net.orca.server.command.CommandGameModeAdventure
-import net.orca.server.command.CommandGameModeCreative
-import net.orca.server.command.CommandGameModeSpectator
-import net.orca.server.command.CommandGameModeSurvival
-import net.orca.server.command.CommandHub
-import net.orca.server.command.CommandStop
-import net.orca.server.command.CommandTps
 import revxrsal.commands.minestom.MinestomLamp
 
 class YozoraCommands {
@@ -22,6 +15,7 @@ class YozoraCommands {
             lamp.register(CommandGameModeSurvival())
             lamp.register(CommandGameModeSpectator())
             lamp.register(CommandHub())
+            lamp.register(CommandSg())
         }
     }
 }
