@@ -1,9 +1,10 @@
 package net.orca.server.command
 
 import net.kyori.adventure.text.Component
+import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
 import net.orca.server.hub.Hub
-import net.orca.server.survivalgames.SurvivalGames
+import net.orca.server.game.survivalgames.SurvivalGames
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.CommandPlaceholder
 import revxrsal.commands.minestom.actor.MinestomCommandActor
@@ -52,12 +53,24 @@ class CommandGameModeSpectator {
     }
 }
 
+@Command(value = ["teleport", "tp"])
+class CommandTeleport {
+    @CommandPlaceholder
+    fun onCommand(actor: MinestomCommandActor, x: Double, y: Double, z: Double) {
+        if (actor.isPlayer) {
+            actor.asPlayer()?.teleport(Pos(x, y, z))
+        }
+    }
+}
+
+
+
 @Command("hub")
 class CommandHub {
     @CommandPlaceholder
     fun onCommand(actor: MinestomCommandActor) {
         if (actor.isPlayer) {
-            actor.asPlayer()?.instance = Hub.instance().getInstance()
+            actor.asPlayer()?.instance = Hub.instance()
         }
     }
 }
@@ -67,7 +80,8 @@ class CommandSg {
     @CommandPlaceholder
     fun onCommand(actor: MinestomCommandActor) {
         if (actor.isPlayer) {
-            actor.asPlayer()?.instance = SurvivalGames.instance().getInstance()
+            // TODO: 試合の状況によってインスタンス先を変更させる
+            actor.asPlayer()?.instance = SurvivalGames.instanceLobby()
         }
     }
 }

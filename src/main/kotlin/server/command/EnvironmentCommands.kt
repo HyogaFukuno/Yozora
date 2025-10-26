@@ -11,7 +11,7 @@ import revxrsal.commands.minestom.actor.MinestomCommandActor
 class CommandStop {
     @CommandPlaceholder
     fun onCommand() {
-        Yozora.instance().stop()
+        Yozora.stop()
     }
 }
 

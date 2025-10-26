@@ -1,44 +1,30 @@
 package net.orca.server
 
-import de.articdive.jnoise.generators.noisegen.opensimplex.FastSimplexNoiseGenerator
-import de.articdive.jnoise.pipeline.JNoise
 import io.github.oshai.kotlinlogging.KotlinLogging
-import net.minestom.server.Auth
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
-import net.minestom.server.instance.block.Block
 import net.orca.extension.addListener
 import net.orca.server.command.YozoraCommands
 import net.orca.server.hub.Hub
-import net.orca.server.survivalgames.SurvivalGames
 import net.orca.server.util.TpsCalculator
 import kotlin.concurrent.atomics.AtomicBoolean
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.system.exitProcess
 
 @OptIn(ExperimentalAtomicApi::class)
-class Yozora {
-    companion object {
-        private var INSTANCE: Yozora? = null
-
-        fun instance(): Yozora {
-            return INSTANCE!!
-        }
-    }
-
+object Yozora {
     private val logger = KotlinLogging.logger {}
-    private val server = MinecraftServer.init(Auth.Online())
     private val running = AtomicBoolean(false)
+    private val server = MinecraftServer.init()
+
+    fun server(): MinecraftServer = server
+    fun isRunning(): Boolean = running.load()
+
 
     init {
         MinecraftServer.setBrandName("Yozora")
-        INSTANCE = this
-    }
-
-    fun server(): MinecraftServer {
-        return server
     }
 
     fun start() {
@@ -51,32 +37,6 @@ class Yozora {
                 logger.info { "Good night." }
             }
 
-            val instanceManager = MinecraftServer.getInstanceManager()
-            val instance = instanceManager.createInstanceContainer()
-
-            val noise = JNoise.newBuilder()
-                .fastSimplex(FastSimplexNoiseGenerator.newBuilder().build())
-                .scale(0.005)
-                .build()
-
-            instance.setGenerator { unit ->
-                val start = unit.absoluteStart()
-                for (x in 0 until unit.size().blockX()) {
-                    for (z in 0 until unit.size().blockZ()) {
-                        val bottom = start.add(x.toDouble(), 0.0, z.toDouble())
-
-                        synchronized(noise) {
-                            val height = noise.evaluateNoise(bottom.x(), bottom.z()) * 16
-                            unit.modifier().fill(bottom, bottom.add(1.0, 0.0, 1.0).withY(height), Block.STONE)
-                        }
-                    }
-                }
-            }
-            instance.setBlock(0, 30, 0, Block.CHEST)
-
-            Hub().register()
-            SurvivalGames().register()
-
             // コマンドの登録
             YozoraCommands.register()
 
@@ -85,7 +45,7 @@ class Yozora {
 
             MinecraftServer.getGlobalEventHandler().addListener<AsyncPlayerConfigurationEvent> { e ->
                 val player = e.player
-                e.spawningInstance = instance
+                e.spawningInstance = Hub.instance()
                 player.respawnPoint = Pos(0.0, 42.0, 0.0)
                 player.gameMode = GameMode.CREATIVE
             }
@@ -100,7 +60,6 @@ class Yozora {
         if (running.compareAndSet(expectedValue = true, newValue = false)) {
             try {
                 MinecraftServer.stopCleanly()
-                Thread.sleep(500L)
                 exitProcess(0)
             }catch (ex: Exception) {
                 logger.error(ex) { "Failed to shutdown process." }

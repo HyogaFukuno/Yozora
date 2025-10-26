@@ -51,7 +51,7 @@ kotlin {
 tasks {
     jar {
         manifest {
-            attributes["Main-Class"] = "org.example.Main" // Change this to your main class
+            attributes["Main-Class"] = "net.orca.MainKt" // Change this to your main class
         }
     }
 

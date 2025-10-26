@@ -16,16 +16,16 @@ import kotlin.coroutines.CoroutineContext
 
 fun Entity.launch(block: suspend CoroutineScope.() -> Unit): Job {
     val dispatcher = SchedulerDispatcher(this)
-    return Yozora.instance().server().scope.launch(dispatcher, CoroutineStart.DEFAULT, block)
+    return Yozora.server().scope.launch(dispatcher, CoroutineStart.DEFAULT, block)
 }
 
 fun <T> Entity.async(block: suspend CoroutineScope.() -> T): Deferred<T> {
     val dispatcher = SchedulerDispatcher(this)
-    return Yozora.instance().server().scope.async(dispatcher, CoroutineStart.DEFAULT, block)
+    return Yozora.server().scope.async(dispatcher, CoroutineStart.DEFAULT, block)
 }
 
 fun launch(block: suspend CoroutineScope.() -> Unit): Job {
-    return Yozora.instance().server().scope.launch(block = block)
+    return Yozora.server().scope.launch(block = block)
 }
 
 internal class SchedulerDispatcher(private val entity: Entity) : CoroutineDispatcher() {
