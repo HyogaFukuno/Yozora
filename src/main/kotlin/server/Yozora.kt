@@ -4,9 +4,11 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
+import net.minestom.server.entity.Player
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
 import net.orca.extension.addListener
 import net.orca.server.command.YozoraCommands
+import net.orca.server.game.survivalgames.SurvivalGames
 import net.orca.server.hub.Hub
 import net.orca.server.util.TpsCalculator
 import kotlin.concurrent.atomics.AtomicBoolean
@@ -46,8 +48,8 @@ object Yozora {
             MinecraftServer.getGlobalEventHandler().addListener<AsyncPlayerConfigurationEvent> { e ->
                 val player = e.player
                 e.spawningInstance = Hub.instance()
-                player.respawnPoint = Pos(0.0, 42.0, 0.0)
-                player.gameMode = GameMode.CREATIVE
+                player.respawnPoint = Pos(-36.5, 162.0, 0.5)
+                player.gameMode = GameMode.SURVIVAL
             }
 
             System.gc()
@@ -59,6 +61,7 @@ object Yozora {
     fun stop() {
         if (running.compareAndSet(expectedValue = true, newValue = false)) {
             try {
+                SurvivalGames.stopAllGame()
                 MinecraftServer.stopCleanly()
                 exitProcess(0)
             }catch (ex: Exception) {

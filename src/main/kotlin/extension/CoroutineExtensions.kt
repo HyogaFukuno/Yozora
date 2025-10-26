@@ -28,6 +28,11 @@ fun launch(block: suspend CoroutineScope.() -> Unit): Job {
     return Yozora.server().scope.launch(block = block)
 }
 
+fun <T> async(block: suspend CoroutineScope.() -> T): Deferred<T> {
+    return Yozora.server().scope.async(block = block)
+}
+
+
 internal class SchedulerDispatcher(private val entity: Entity) : CoroutineDispatcher() {
     override fun dispatch(context: CoroutineContext, block: Runnable) {
         entity.scheduler().scheduleNextProcess(block, ExecutionType.TICK_START)

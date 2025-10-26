@@ -1,13 +1,16 @@
 package net.orca.server.command
 
+import kotlinx.coroutines.delay
 import net.kyori.adventure.text.Component
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
+import net.orca.extension.launch
 import net.orca.server.hub.Hub
 import net.orca.server.game.survivalgames.SurvivalGames
 import revxrsal.commands.annotation.Command
 import revxrsal.commands.annotation.CommandPlaceholder
 import revxrsal.commands.minestom.actor.MinestomCommandActor
+import kotlin.time.Duration.Companion.seconds
 
 @Command(value = ["gamemode creative", "gmc"])
 class CommandGameModeCreative {
@@ -78,10 +81,13 @@ class CommandHub {
 @Command("sg")
 class CommandSg {
     @CommandPlaceholder
-    fun onCommand(actor: MinestomCommandActor) {
-        if (actor.isPlayer) {
-            // TODO: 試合の状況によってインスタンス先を変更させる
-            actor.asPlayer()?.instance = SurvivalGames.instanceLobby()
+    fun onCommand(actor: MinestomCommandActor, gameId: Int) {
+        actor.asPlayer()?.let { player ->
+            player.launch {
+                val context = SurvivalGames.getGameContext(gameId)
+                delay(0.5.seconds)
+                player.instance = context.getInstance()
+            }
         }
     }
 }
