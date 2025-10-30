@@ -1,4 +1,4 @@
-package net.orca.extension
+package net.orca.server.extensions
 
 import com.github.shynixn.mccoroutine.minestom.launch
 import net.minestom.server.MinecraftServer

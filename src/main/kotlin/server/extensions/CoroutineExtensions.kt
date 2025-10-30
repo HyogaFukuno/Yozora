@@ -1,4 +1,4 @@
-package net.orca.extension
+package net.orca.server.extensions
 
 import com.github.shynixn.mccoroutine.minestom.scope
 import kotlinx.coroutines.CoroutineDispatcher
@@ -6,7 +6,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import net.minestom.server.entity.Entity
@@ -31,7 +30,6 @@ fun launch(block: suspend CoroutineScope.() -> Unit): Job {
 fun <T> async(block: suspend CoroutineScope.() -> T): Deferred<T> {
     return Yozora.server().scope.async(block = block)
 }
-
 
 internal class SchedulerDispatcher(private val entity: Entity) : CoroutineDispatcher() {
     override fun dispatch(context: CoroutineContext, block: Runnable) {

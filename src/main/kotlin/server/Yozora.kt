@@ -1,88 +1,91 @@
 package net.orca.server
 
-import io.github.oshai.kotlinlogging.KotlinLogging
+import io.github.togar2.pvp.MinestomPvP
+import io.github.togar2.pvp.feature.CombatFeatures
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Pos
 import net.minestom.server.entity.GameMode
-import net.minestom.server.entity.Player
 import net.minestom.server.event.player.AsyncPlayerConfigurationEvent
-import net.orca.extension.addListener
-import net.orca.server.command.YozoraCommands
-import net.orca.server.game.survivalgames.SurvivalGames
-import net.orca.server.hub.Hub
-import net.orca.server.util.TpsCalculator
-import kotlin.concurrent.atomics.AtomicBoolean
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import net.minestom.server.extras.lan.OpenToLAN
+import net.minestom.server.instance.block.Block
+import net.minestom.server.item.ItemStack
+import net.minestom.server.item.Material
+import net.orca.server.extensions.addListener
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
-@OptIn(ExperimentalAtomicApi::class)
 object Yozora {
-    private val logger = KotlinLogging.logger {}
+
     private val running = AtomicBoolean(false)
     private val server = MinecraftServer.init()
 
     fun server(): MinecraftServer = server
-    fun isRunning(): Boolean = running.load()
-
+    fun isRunning(): Boolean = running.get()
 
     init {
         MinecraftServer.setBrandName("Yozora")
     }
 
     fun start() {
-        running.store(true)
+        try {
+            running.set(true)
 
-        task {
-            logger.info { "Starting server..." }
+            MinestomPvP.init()
+            val combatFeatures = CombatFeatures.legacyVanilla()
 
-            MinecraftServer.getSchedulerManager().buildShutdownTask {
-                logger.info { "Good night." }
+            val instance = MinecraftServer.getInstanceManager().createInstanceContainer()
+            instance.setGenerator { unit ->
+                val start = unit.absoluteStart()
+                val size = unit.size()
+                for (x in 0..<size.blockX()) {
+                    for (z in 0..<size.blockZ()) {
+                        for (y in 0..<(40 - start.blockY()).coerceAtMost(size.blockY())) {
+                            unit.modifier().setBlock(start.add(x.toDouble(), y.toDouble(), z.toDouble()), Block.STONE)
+                        }
+                    }
+                }
             }
 
-            // コマンドの登録
-            YozoraCommands.register()
+            val handler = MinecraftServer.getGlobalEventHandler()
+            handler.addChild(combatFeatures.createNode())
+            handler.addListener<AsyncPlayerConfigurationEvent> {
+                val player = it.player
 
-            // Tps算出タスクの開始
-            TpsCalculator().start()
-
-            MinecraftServer.getGlobalEventHandler().addListener<AsyncPlayerConfigurationEvent> { e ->
-                val player = e.player
-                e.spawningInstance = Hub.instance()
-                player.respawnPoint = Pos(-36.5, 162.0, 0.5)
-                player.gameMode = GameMode.SURVIVAL
+                it.spawningInstance = instance
+                player.respawnPoint = Pos(0.0, 42.0, 0.0)
+                player.inventory.addItemStack(ItemStack.of(Material.STONE_SWORD))
+                player.inventory.addItemStack(ItemStack.of(Material.FISHING_ROD))
+                player.inventory.addItemStack(ItemStack.of(Material.IRON_HELMET))
+                player.inventory.addItemStack(ItemStack.of(Material.IRON_CHESTPLATE))
+                player.inventory.addItemStack(ItemStack.of(Material.IRON_LEGGINGS))
+                player.inventory.addItemStack(ItemStack.of(Material.IRON_BOOTS))
+                player.setGameMode(GameMode.SURVIVAL)
             }
 
-            System.gc()
+            MinecraftServer.LOGGER.info("Opening to LAN...")
+
+            OpenToLAN.open()
 
             server.start("0.0.0.0", 25565)
+            System.gc()
+        }
+        catch (error: Throwable) {
+            stopWithError(error)
         }
     }
 
     fun stop() {
-        if (running.compareAndSet(expectedValue = true, newValue = false)) {
-            try {
-                SurvivalGames.stopAllGame()
-                MinecraftServer.stopCleanly()
-                exitProcess(0)
-            }catch (ex: Exception) {
-                logger.error(ex) { "Failed to shutdown process." }
-            }
-        }
-    }
-
-    fun stopWithError(error: Throwable) {
-        if (running.compareAndSet(expectedValue = true, newValue = false)) {
-            error.printStackTrace()
+        if (running.compareAndSet(true, false)) {
             MinecraftServer.stopCleanly()
             exitProcess(0)
         }
     }
 
-    private fun <T> task(task: () -> T) {
-        try {
-            task()
-        } catch (error: Throwable) {
-            stopWithError(error)
+    private fun stopWithError(error: Throwable) {
+        if (running.compareAndSet(false, true)) {
+            error.printStackTrace()
+            MinecraftServer.stopCleanly()
+            exitProcess(0)
         }
     }
 }
