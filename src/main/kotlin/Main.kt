@@ -1,9 +1,14 @@
 package net.orca
 
+import kotlinx.coroutines.delay
 import net.orca.server.Yozora
+import kotlin.system.exitProcess
+import kotlin.time.Duration.Companion.seconds
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
-fun main() {
-    Yozora.start()
+suspend fun main() {
+    Yozora.run()
+    while (Yozora.isRunning()) {
+        delay(1.seconds)
+    }
+    exitProcess(0)
 }
